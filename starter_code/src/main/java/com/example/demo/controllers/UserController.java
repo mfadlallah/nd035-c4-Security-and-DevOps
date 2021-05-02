@@ -1,9 +1,9 @@
 package com.example.demo.controllers;
 
-import java.util.Optional;
-
+import org.apache.logging.log4j.LogManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,6 +32,8 @@ public class UserController {
 	@Autowired
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
 
+	private static final Logger log = LoggerFactory.getLogger(UserController.class);
+
 	@GetMapping("/id/{id}")
 	public ResponseEntity<User> findById(@PathVariable Long id) {
 		return ResponseEntity.of(userRepository.findById(id));
@@ -53,10 +55,17 @@ public class UserController {
 
 		if (createUserRequest.getPassword().length() < 7
 				|| !createUserRequest.getPassword().equals(createUserRequest.getConfirmPassword())) {
+			log.error("Password is does not match or less than 7");
+			log.info("Failed To Create User: " + user.getUsername());
 			return ResponseEntity.badRequest().build();
 		}
 		user.setPassword(bCryptPasswordEncoder.encode(createUserRequest.getPassword()));
-		userRepository.save(user);
+		try {
+			userRepository.save(user);
+		}catch (Exception e){
+			log.error(e.getMessage());
+		}
+		log.info("User Created Successfully: " + user.getUsername());
 		return ResponseEntity.ok(user);
 	}
 	
