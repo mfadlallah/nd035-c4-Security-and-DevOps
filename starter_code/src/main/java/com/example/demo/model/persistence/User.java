@@ -34,7 +34,7 @@ public class User {
 	@JsonIgnore
     private Cart cart;
 
-	@JsonProperty
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	private String password;
 
 	public String getPassword() {
